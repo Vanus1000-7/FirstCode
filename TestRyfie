@@ -1,0 +1,173 @@
+from pygame import *
+import time as re
+class My_sprite(sprite.Sprite):
+    def __init__(self,x,y,picture,w,h):
+        super().__init__()
+        self.image = transform.scale(image.load(picture), (w,h))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+    def reset (self):
+        window.blit(self.image, (self.rect.x, self.rect.y))
+class Playr(My_sprite):
+    def __init__(self,x,y,picture,w,h,x_speed,y_speed):
+        My_sprite.__init__(self,x,y,picture,w,h)
+        self.x_speed = x_speed
+        self.y_speed = y_speed
+    def update(self):
+        self.rect.x += self.x_speed
+        platform_touched = sprite.spritecollide(self, wall,False)
+        if self.x_speed > 0:
+             for p in platform_touched:
+                 self.rect.right = min(self.rect.right,p.rect.left)
+        elif self.x_speed < 0:
+            for p in platform_touched:
+                 self.rect.left = max(self.rect.left,p.rect.right)
+
+        self.rect.y += self.y_speed
+        platform_touched = sprite.spritecollide(self, wall,False)
+        if self.y_speed > 0:
+             for p in platform_touched:
+                 self.rect.bottom = min(self.rect.bottom,p.rect.top)
+        elif self.y_speed < 0:
+            for p in platform_touched:
+                 self.rect.top = max(self.rect.top,p.rect.bottom)   
+    def ne_window(self):
+        if self.rect.x<0:
+            self.rect.x=0
+        if self.rect.x> 679:
+            self.rect.x = 679
+        if self.rect.y<0:
+            self.rect.y = 0 
+        if self.rect.y > 679:
+            self.rect.y = 679   
+    def fire(self):
+        bulet = Bulet(self.rect.right,self.rect.centery,'bulet.png',2,4,20)
+        sprite.spritecollide(bulets,wall,True,False)
+        sprite.spritecollide(bulets,monster,True,True)
+        sprite.spritecollide(playr,wall,False)
+    
+
+
+
+class Enemy (My_sprite):
+    def __init__(self,x,y,picture,w,h,speed):
+        My_sprite.__init__(self,x,y,picture,w,h)
+        self.speed = speed
+    def update(self):
+        if self.rect.y >= 400:
+            self.direction = 'top'
+        if self.rect.y <= 300:
+            self.direction = 'bottom'
+        if self.direction == 'bottom':
+            self.rect.y += self.speed
+        else:
+            self.rect.y -= self.speed
+class Bulet (My_sprite):
+    def __init__(self,x,y,picture,w,h,speed):
+        My_sprite.__init__(self,x,y,picture,w,h,speed)
+        self.speed = speed
+    def update(self):
+        self.rect.x += self.speed
+        if self.rect.x > 690:
+            self.kill
+    
+      
+
+    
+
+
+
+
+
+
+
+
+# прога для создания окна
+playr = Playr(20,20,'gary1.png',20,20,0,0)
+w_1 = My_sprite(0,50,'free-icon-wall-698633.png',500,100)  
+w_2 = My_sprite(100,200,'free-icon-wall-698633.png',600,100)  
+w_3 = My_sprite(300,200,'free-icon-wall-698633.png',200,200) 
+w_4 = My_sprite(0,450,'free-icon-wall-698633.png',600,50) 
+w_5 = My_sprite(150,600,'free-icon-wall-698633.png',600,50) 
+finish_sprite = My_sprite(600,650,'win.png',50,50) 
+wall = sprite.Group()
+monster = Enemy(100,400,'blak.png',40,40,10)
+# стены в группе
+wall.add(w_1)
+wall.add(w_2)
+wall.add(w_3)
+wall.add(w_4)
+wall.add(w_5)
+bulets = sprite.Group()
+bulets.add(bulets)
+#finish_sprite =
+finish = False
+window = display.set_mode((700, 700))
+picture = transform.scale(image.load('fon.png'), (700, 700))
+display.set_caption('Моя игра')
+win = transform.scale(image.load('win.png'), (700, 700))
+loose =  transform.scale(image.load('blak.png'), (700, 700))
+run = True
+timer = time.Clock()
+while run:
+    time.delay(2)
+    for e in event.get():
+        if e.type == QUIT:
+            run = False
+        
+        elif e.type == KEYDOWN:
+            if e.type == K_SPACE:
+                playr.fire()
+            if e.key ==  K_UP:
+                playr.y_speed = -10
+            if e.key == K_DOWN:
+                playr.y_speed = 10
+            if e.key == K_LEFT:
+                playr.x_speed = -10
+            if e.key == K_RIGHT:
+                playr.x_speed = 10
+
+            
+
+        elif e.type == KEYUP:
+            if e.key ==  K_UP:
+                playr.y_speed = 0
+            if e.key == K_DOWN:
+                playr.y_speed = 0
+            if e.key == K_LEFT:
+                playr.x_speed = 0
+            if e.key == K_RIGHT:
+                playr.x_speed = 0 
+    if finish != True:
+        window.blit(picture,(0,0))
+        finish_sprite.reset()
+        wall.draw(window)
+        playr.reset()
+        playr.update()
+        playr.ne_window()
+        monster.reset()
+        monster.update()
+        bulets.update()
+        bulets.draw(window)
+      
+        if sprite.collide_rect(playr,finish_sprite):
+            finish = True
+            window.blit(win,(0,0))
+            display.update()
+            re.sleep(5)
+        if sprite.collide_rect(playr,monster):
+            finish = True
+            window.blit(loose,(0,0))
+            display.update()
+            re.sleep(5)
+        if finish == True:
+            finish = False
+            playr = Playr(20,20,'gary1.png',20,20,0,0)
+
+
+        
+    
+    
+    
+    display.update()
